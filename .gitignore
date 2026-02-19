@@ -1,6 +1,14 @@
-.env
+# Python
 __pycache__/
 *.pyc
+.venv/
+
+# Secrets
+.env
+
+# Project folders
 uploads/
 outputs/
+
+# OS
 .DS_Store
