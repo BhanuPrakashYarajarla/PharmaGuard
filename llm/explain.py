@@ -4,9 +4,9 @@ import google.generativeai as genai
 from openai import OpenAI
 from dotenv import load_dotenv
 
-# Load environment variables
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# # Load environment variables
+# GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def _construct_prompt(phenotype_profile, drug_name, risk_assessment):
     return f"""
