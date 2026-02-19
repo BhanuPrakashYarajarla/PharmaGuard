@@ -3,7 +3,7 @@ gunicorn
 python-dotenv
 requests
 
-google-genai
+google-generativeai
 openai
 
 pandas
