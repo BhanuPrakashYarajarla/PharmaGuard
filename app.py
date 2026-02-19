@@ -7,6 +7,10 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 load_dotenv()
 
+print("ENV GEMINI:", "FOUND" if os.getenv("GEMINI_API_KEY") else "MISSING")
+print("ENV OPENAI:", "FOUND" if os.getenv("OPENAI_API_KEY") else "MISSING")
+
+
 
 # Import modules
 from parser.vcf_parser import parse_vcf
