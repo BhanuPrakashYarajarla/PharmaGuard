@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaGuard Results</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="container mt-5 mb-5">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Analysis Report</h1>
+            <div>
+                <a href="/" class="btn btn-primary">New Analysis</a>
+            </div>
+        </div>
+
+        {% for result in results %}
+        <!-- Main Result Container -->
+        <div class="card mb-5 border-0 shadow-lg"
+            style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px);">
+            <div class="card-body p-4">
+
+                <!-- 1. Risk Header (Alert) -->
+                {% set severity = result.risk_assessment.severity %}
+                {% if severity == 'low' %}
+                {% set risk_class = 'alert-success' %}
+                {% set risk_label = 'Safe / Normal Risk' %}
+                {% set risk_icon = 'fa-check-circle' %}
+                {% elif severity == 'medium' %}
+                {% set risk_class = 'alert-warning' %}
+                {% set risk_label = 'Caution / Adjust Dosage' %}
+                {% set risk_icon = 'fa-exclamation-triangle' %}
+                {% else %}
+                {% set risk_class = 'alert-danger' %}
+                {% set risk_label = 'High Risk / Toxic' %}
+                {% set risk_icon = 'fa-radiation' %}
+                {% endif %}
+
+                <div class="alert {{ risk_class }} shadow-sm mb-4">
+                    <h2 class="alert-heading">
+                        <i class="fa-solid {{ risk_icon }} me-2"></i> {{ risk_label }}
+                    </h2>
+                    <p class="mb-0"><strong>Severity:</strong> {{ severity }} | <strong>Drug:</strong> {{ result.drug }}
+                    </p>
+                    <hr>
+                    <div class="d-flex align-items-center">
+                        <strong class="me-3">Confidence Score:</strong>
+                        <div class="progress flex-grow-1" style="height: 25px; background: rgba(0,0,0,0.1);">
+                            {% set score_pct = (result.risk_assessment.confidence_score | default(0.5) * 100) | round |
+                            int %}
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-current-status"
+                                role="progressbar" style="width: 0%;" data-width="{{ score_pct }}%"
+                                aria-valuenow="{{ score_pct }}" aria-valuemin="0" aria-valuemax="100">
+                                <strong>{{ score_pct }}%</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- 2. Pharmacogenomic Profile Card -->
+                    <div class="col-md-12 mb-4">
+                        <div class="accordion" id="accordionProfile-{{ loop.index }}">
+                            <div class="accordion-item bg-white border-light text-dark shadow-sm">
+                                <h2 class="accordion-header" id="headingProfile-{{ loop.index }}">
+                                    <button
+                                        class="accordion-button bg-transparent text-primary typography-section-heading"
+                                        type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapseProfile-{{ loop.index }}" aria-expanded="true"
+                                        aria-controls="collapseProfile-{{ loop.index }}">
+                                        <i class="fa-solid fa-dna me-2"></i> Pharmacogenomic Profile
+                                    </button>
+                                </h2>
+                                <div id="collapseProfile-{{ loop.index }}" class="accordion-collapse collapse show"
+                                    aria-labelledby="headingProfile-{{ loop.index }}">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <small class="d-block typography-card-label">Primary Gene</small>
+                                                <h5 class="text-dark typography-key-value">{{
+                                                    result.pharmacogenomic_profile.primary_gene }}
+                                                </h5>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <small class="d-block typography-card-label">Diplotype</small>
+                                                <h5 class="text-dark typography-key-value">{{
+                                                    result.pharmacogenomic_profile.diplotype }}
+                                                </h5>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <small class="d-block typography-card-label">Phenotype</small>
+                                                <h5 class="text-warning typography-key-value">{{
+                                                    result.pharmacogenomic_profile.phenotype }}
+                                                </h5>
+                                            </div>
+                                        </div>
+                                        <hr class="border-light">
+                                        <small class="d-block mb-2 typography-card-label">Detected Variants</small>
+                                        <div>
+                                            {% for variant in result.pharmacogenomic_profile.detected_variants %}
+                                            <span class="variant-chip">{{ variant.rsid }}</span>
+                                            {% else %}
+                                            <span class="text-muted typography-body-text">No specific risk variants
+                                                detected.</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Clinical Recommendation Card (Expandable) -->
+                    <div class="col-md-12 mb-4">
+                        <div class="accordion" id="accordionRec-{{ loop.index }}">
+                            <div class="accordion-item bg-white border-light text-dark shadow-sm">
+                                <h2 class="accordion-header" id="headingRec-{{ loop.index }}">
+                                    <button
+                                        class="accordion-button bg-transparent text-success typography-section-heading"
+                                        type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapseRec-{{ loop.index }}" aria-expanded="true"
+                                        aria-controls="collapseRec-{{ loop.index }}">
+                                        <i class="fa-solid fa-user-md me-2"></i> Clinical Recommendation
+                                    </button>
+                                </h2>
+                                <div id="collapseRec-{{ loop.index }}" class="accordion-collapse collapse show"
+                                    aria-labelledby="headingRec-{{ loop.index }}">
+                                    <div class="accordion-body">
+                                        <p class="lead text-dark typography-body-text">{{
+                                            result.llm_generated_explanation.clinical_recommendation }}</p>
+                                        <hr class="border-light">
+                                        <div>
+                                            <small class="text-uppercase typography-card-label">Guideline Basis</small>
+                                            <p class="mb-0 text-primary typography-body-text">{{
+                                                result.llm_generated_explanation.guideline_basis }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Clinical Explanation Card (Expandable) -->
+                    <div class="col-md-12 mb-4">
+                        <div class="accordion" id="accordionExplain-{{ loop.index }}">
+                            <div class="accordion-item bg-white border-light text-dark shadow-sm">
+                                <h2 class="accordion-header" id="headingExplain-{{ loop.index }}">
+                                    <button class="accordion-button bg-transparent text-info typography-section-heading"
+                                        type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapseExplain-{{ loop.index }}" aria-expanded="true"
+                                        aria-controls="collapseExplain-{{ loop.index }}">
+                                        <i class="fa-solid fa-brain me-2"></i> Clinical Explanation (AI Analysis)
+                                    </button>
+                                </h2>
+                                <div id="collapseExplain-{{ loop.index }}" class="accordion-collapse collapse show"
+                                    aria-labelledby="headingExplain-{{ loop.index }}">
+                                    <div class="accordion-body">
+                                        <h6 class="text-primary typography-card-label">Medical Summary</h6>
+                                        <p class="typography-body-text">{{ result.llm_generated_explanation.summary }}
+                                        </p>
+
+                                        <h6 class="text-primary mt-3 typography-card-label">Biological Mechanism</h6>
+                                        <p class="typography-body-text">{{
+                                            result.llm_generated_explanation.biological_mechanism }}</p>
+
+                                        <h6 class="text-primary mt-3 typography-card-label">Reasoning & Impact</h6>
+                                        <p class="typography-body-text">{{ result.llm_generated_explanation.reasoning }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Quality Metrics Pill -->
+                    <div class="col-md-12 mb-4">
+                        <div class="quality-pill">
+                            <div class="d-flex align-items-center">
+                                <i class="fa-solid fa-check icon-check me-2"></i>
+                                <span>VCF Parsed</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fa-solid fa-check icon-check me-2"></i>
+                                <span>Gene Match: True</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fa-solid fa-database icon-data me-2"></i>
+                                <span>Variants: {{ variant_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Raw JSON Viewer -->
+                    <div class="col-md-12">
+                        <div class="card bg-white border-light text-dark shadow-sm">
+                            <div
+                                class="card-header bg-transparent border-light d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 text-muted">Raw Data (JSON)</h6>
+                                <div>
+                                    <button class="btn btn-outline-secondary btn-sm me-2 copy-btn"
+                                        data-json='{{ result.json_str }}'>
+                                        <i class="fa-solid fa-copy"></i> Copy
+                                    </button>
+                                    <a href="{{ url_for('download_file', filename=json_file) }}"
+                                        class="btn btn-outline-primary btn-sm">
+                                        <i class="fa-solid fa-download"></i> Download Report
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <textarea readonly class="json-viewer form-control bg-light text-dark border-0"
+                                    rows="6">{{ result.json_str }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <footer class="text-center text-muted mt-4">
+            <small>Result Generated: {{ results[0].timestamp if results else 'N/A' }}</small>
+        </footer>
+
+        <!-- Simple Animation & Copy Script -->
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Animate Progress Bars
+                const bars = document.querySelectorAll('.progress-bar');
+                bars.forEach(bar => {
+                    const width = bar.getAttribute('data-width');
+                    // Small delay to allow transition
+                    setTimeout(() => {
+                        bar.style.width = width;
+                        // Dynamically colour bar based on parent alert
+                        const alert = bar.closest('.alert');
+                        if (alert.classList.contains('alert-success')) bar.classList.add('bg-success');
+                        else if (alert.classList.contains('alert-warning')) bar.classList.add('bg-warning');
+                        else if (alert.classList.contains('alert-danger')) bar.classList.add('bg-danger');
+                        else bar.classList.add('bg-info');
+                    }, 100);
+                });
+
+                // Copy Functionality
+                const copyBtns = document.querySelectorAll('.copy-btn');
+                copyBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const data = btn.getAttribute('data-json');
+                        navigator.clipboard.writeText(data).then(() => {
+                            const originalHtml = btn.innerHTML;
+                            btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+                            setTimeout(() => {
+                                btn.innerHTML = originalHtml;
+                            }, 2000);
+                        });
+                    });
+                });
+            });
+        </script>
+        <!-- Bootstrap JS Bundle (Required for Accordions) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

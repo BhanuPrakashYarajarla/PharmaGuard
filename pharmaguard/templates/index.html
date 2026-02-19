@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaGuard | AI Pharmacogenomics</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar container">
+        <div class="brand-logo">
+            <i class="fa-solid fa-dna brand-icon"></i>
+            <div>
+                PharmaGuard
+                <span class="brand-subtitle">PHARMACOGENOMIC AI</span>
+            </div>
+        </div>
+        <!-- Removed RIFT/Hackathon Badges -->
+    </nav>
+
+    <main class="container hero-section">
+
+        <!-- Removed Hero Pill -->
+
+        <h1 class="hero-title">PharmaGuard</h1>
+        <h2 class="hero-subtitle">Pharmacogenomic Risk Prediction System</h2>
+
+        <p class="hero-description">
+            Upload a patient VCF file and select target drugs to receive AI-powered pharmacogenomic risk
+            assessments, clinical recommendations, and explainable genomic insights.
+        </p>
+
+        <div class="gene-badges">
+            <div class="badge-outline">CYP2D6</div>
+            <div class="badge-outline">CYP2C19</div>
+            <div class="badge-outline">CYP2C9</div>
+            <div class="badge-outline">SLCO1B1</div>
+            <div class="badge-outline">TPMT</div>
+            <div class="badge-outline">DPYD</div>
+        </div>
+
+        <a href="#upload-section" class="scroll-indicator">
+            <i class="fa-solid fa-chevron-down"></i>
+        </a>
+
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay d-none">
+        <div class="loading-content text-center">
+            <div class="spinner-custom mb-3"></div>
+            <h5 class="text-dark fw-bold">Analyzing Genomic Data...</h5>
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <section id="upload-section" class="container upload-section">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show w-100 mb-4" role="alert"
+            style="max-width: 600px;">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Upload Form -->
+        <div class="upload-card">
+            <h3 class="text-center mb-4 text-dark">Start Analysis</h3>
+            <form action="/analyze" method="post" enctype="multipart/form-data" id="analysisForm">
+
+                <!-- Drag & Drop File Input -->
+                <div class="mb-4">
+                    <label class="form-label text-start d-block text-secondary">Upload VCF File (Max 5MB)</label>
+                    <div id="drop-zone"
+                        class="drop-zone p-4 text-center rounded border border-2 border-dashed border-secondary"
+                        style="background: rgba(255,255,255,0.5); cursor: pointer;">
+                        <i class="fa-solid fa-cloud-arrow-up fa-2x mb-3 text-primary"></i>
+                        <p class="mb-0 text-secondary" id="file-label">Drag & Drop VCF file here or click to browse</p>
+                        <input type="file" id="vcfFile" name="file" accept=".vcf" class="d-none" required>
+                    </div>
+                    <small id="file-error" class="text-danger mt-1 d-none">Invalid file size or format.</small>
+                </div>
+
+                <!-- Hybrid Drug Selection -->
+                <div class="mb-4">
+                    <label class="form-label text-start d-block text-secondary">Select Target Drugs</label>
+                    <div class="input-group">
+                        <select class="form-select bg-white text-dark border-secondary custom-select" id="drugSelect"
+                            style="max-width: 150px;">
+                            <option value="" selected>Select Drug</option>
+                            <option value="Codeine">Codeine</option>
+                            <option value="Warfarin">Warfarin</option>
+                            <option value="Clopidogrel">Clopidogrel</option>
+                            <option value="Simvastatin">Simvastatin</option>
+                            <option value="Azathioprine">Azathioprine</option>
+                            <option value="Fluorouracil">Fluorouracil</option>
+                        </select>
+                        <input type="text" class="form-control" id="drugName" name="drug"
+                            placeholder="e.g. Codeine, Warfarin" required>
+                    </div>
+                    <div class="form-text text-secondary">Select from list or type multiple drugs separated by commas.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Analyze Genome</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Scroll Indicator Logic
+        const scrollIndicator = document.querySelector('.scroll-indicator');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                scrollIndicator.classList.add('fade-out');
+            } else {
+                scrollIndicator.classList.remove('fade-out');
+            }
+        });
+
+        // Drag & Drop Logic
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('vcfFile');
+        const fileLabel = document.getElementById('file-label');
+        const fileError = document.getElementById('file-error');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#38BDF8';
+            dropZone.style.background = 'rgba(56, 189, 248, 0.1)';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#6c757d'; // border-secondary
+            dropZone.style.background = 'rgba(255,255,255,0.05)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#6c757d';
+            dropZone.style.background = 'rgba(255,255,255,0.05)';
+
+            if (e.dataTransfer.files.length) {
+                validateAndSetFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                validateAndSetFile(fileInput.files[0]);
+            }
+        });
+
+        function validateAndSetFile(file) {
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (!file.name.toLowerCase().endsWith('.vcf')) {
+                showError('Only .vcf files are allowed.');
+                fileInput.value = '';
+                return;
+            }
+            if (file.size > maxSize) {
+                showError('File size exceeds 5MB limit.');
+                fileInput.value = '';
+                return;
+            }
+
+            // Valid file
+            fileInput.files = createFileList(file); // Hack for drag-drop to input
+            fileLabel.textContent = `Selected: ${file.name}`;
+            fileLabel.classList.add('text-info');
+            fileError.classList.add('d-none');
+        }
+
+        function showError(msg) {
+            fileError.textContent = msg;
+            fileError.classList.remove('d-none');
+            fileLabel.textContent = 'Drag & Drop VCF file here or click to browse';
+            fileLabel.classList.remove('text-info');
+        }
+
+        // Helper to set files property (since it's read-only usually, but DataTransfer allows it)
+        function createFileList(file) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            return dt.files;
+        }
+
+        // Hybrid Drug Input Logic
+        const drugSelect = document.getElementById('drugSelect');
+        const drugInput = document.getElementById('drugName');
+
+        drugSelect.addEventListener('change', () => {
+            const selected = drugSelect.value;
+            if (selected) {
+                const current = drugInput.value.trim();
+                if (current) {
+                    if (!current.includes(selected)) {
+                        drugInput.value = current + ', ' + selected;
+                    }
+                } else {
+                    drugInput.value = selected;
+                }
+            }
+            // Reset select
+            drugSelect.value = "";
+        });
+
+        // Form Submit - Show Loading
+        const form = document.getElementById('analysisForm');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        form.addEventListener('submit', () => {
+            // Only show if valid
+            if (drugInput.value && (fileInput.files.length > 0)) {
+                loadingOverlay.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+
+</html>
