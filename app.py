@@ -165,7 +165,14 @@ def analyze():
 def download_file(filename):
     return send_file(os.path.join(app.config['OUTPUT_FOLDER'], filename), as_attachment=True)
 
-import os
+@app.route("/env-test")
+def env_test():
+    import os
+    return {
+        "gemini": bool(os.getenv("GEMINI_API_KEY")),
+        "openai": bool(os.getenv("OPENAI_API_KEY"))
+    }
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
