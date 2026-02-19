@@ -6,7 +6,7 @@ AI-powered precision medicine platform that analyzes patient genomic VCF data to
 
 ## 🚀 Live Demo
 
-🌐 App: **Add Render Link Here**
+🌐 App: **[PharmaGuard](https://pharmaguard-production-629b.up.railway.app/)**
 
 🎥 LinkedIn Demo Video: **Add LinkedIn Video Link Here**
 
@@ -173,13 +173,14 @@ Returns structured JSON:
 
 ## 📸 Interface Preview
 
-Add screenshots here:
+![Home Screen](images/herosection.png)
 
-```
-docs/images/input.png
-docs/images/dashboard.png
-docs/images/ai_panel.png
-```
+![upload section](images/upload.png)
+
+![Result page](images/result.png)
+
+![JSON](images/JSON.png)
+
 
 ---
 
