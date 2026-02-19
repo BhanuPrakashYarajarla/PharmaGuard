@@ -1,0 +1,10 @@
+flask
+gunicorn
+python-dotenv
+requests
+
+google-generativeai
+openai
+
+pandas
+numpy
