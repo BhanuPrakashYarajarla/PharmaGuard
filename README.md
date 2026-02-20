@@ -8,7 +8,7 @@ AI-powered precision medicine platform that analyzes patient genomic VCF data to
 
 🌐 App: **[PharmaGuard](https://pharmaguard-production-629b.up.railway.app/)**
 
-🎥 LinkedIn Demo Video: **Add LinkedIn Video Link Here**
+🎥 LinkedIn Demo Video: **[Demo Video](https://www.linkedin.com/posts/bhanu-prakash-yarajarla-0ab9742a6_rift2026-pharmaguard-pharmacogenomics-activity-7430410968335208448-ew5k/?utm_source=social_share_send&utm_medium=member_desktop_web&rcm=ACoAAEnTXoMBYES5RR-nC7Ex4fS7GtFVFOrJUzQ)**
 
 ---
 
